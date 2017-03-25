@@ -17,7 +17,7 @@
  */
 (function () {
   'use strict';
-  //setting the initialization method for latency test suite
+  // setting the initialization method for latency test suite
   var oldOnload = window.onload;
   window.onload = function () {
     void (oldOnload instanceof Function && oldOnload());
@@ -25,9 +25,6 @@
     initTest();
   };
 
-  var testRunner = [];
-  var currentInterval;
-  var testButtonText = 'Start';
   var testPlan;
   var myChart;
   var option;
@@ -58,14 +55,17 @@
     function addEvent(el, ev, fn) {
       void (el.addEventListener && el.addEventListener(ev, fn, false));
       void (el.attachEvent && el.attachEvent('on' + ev, fn));
-      void (!(el.addEventListener || el.attachEvent) && function (el, ev) { el['on' + ev] = fn } (el, ev));
+      void (!(el.addEventListener || el.attachEvent) && function (el, ev) { el['on' + ev] = fn; } (el, ev));
     }
-    startTestButton = document.querySelector(".action-start");
+
+    startTestButton = document.querySelector('.action-start');
+
     addEvent(startTestButton, 'click', function () {
       startTest();
     });
+
     getTestPlan(function (testPlan) {
-      //initialize speedometer
+      // initialize speedometer
       myChart = echarts.init(document.querySelector('.speed-gauge'));
       option = {
         series: [
@@ -126,20 +126,11 @@
       }
 
       latencyTest(testPlan.hasIPv6 ? 'IPv6' : 'IPv4');
-
     });
   }
 
   function hasClass(el, className) {
     return (el.classList) ? el.classList.contains(className) : !!el.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'));
-  }
-
-  function addClass(el, className) {
-    if (!hasClass(el, className)) {
-      el.className += " " + className;
-      return;
-    }
-    void (el.classList && el.classList.add(className));
   }
 
   function removeClass(el, className) {
@@ -148,15 +139,8 @@
       el.className = el.className.replace(reg, ' ');
       return;
     }
-    void ((el.classList) && el.classList.remove(className));
-  }
 
-  function updateCurrentValue(currentLabel, currentValue) {
-    return function () {
-      option.series[0].data[0].value = currentValue;
-      option.series[0].data[0].name = currentLabel;
-      myChart.setOption(option, true);
-    };
+    void ((el.classList) && el.classList.remove(className));
   }
 
   function getTestPlan(func) {
@@ -165,24 +149,27 @@
       if (xhr.readyState == XMLHttpRequest.DONE) {
         var data = JSON.parse(xhr.responseText);
         testPlan = data;
+
         if (testPlan.performLatencyRouting) {
           latencyBasedRouting();
         }
+
         void ((func && func instanceof Function) && func(data));
       }
     };
+
     xhr.open('GET', '/testplan', true);
     xhr.send(null);
   }
 
   function latencyBasedRoutingOnComplete(result) {
-    //TODO update the base urls for websockets if you want to perform the latency test via websockets
+    // TODO update the base urls for websockets if you want to perform the latency test via websockets
     testPlan.baseUrlIPv4 = result.IPv4Address;
     testPlan.baseUrlIPv6 = result.IPv6Address;
   }
 
   function latencyBasedRoutingOnError(result) {
-    console.log(result);
+    console.info(result);
   }
 
   function latencyBasedRouting() {
@@ -192,7 +179,6 @@
   }
 
   function startTest() {
-
     if (firstRun) {
       firstRun = false;
     } else {
@@ -201,7 +187,6 @@
         resultsEl[i].innerHTML = '';
       }
     }
-
 
     void (setTimeout(function () { !firstRun && downloadTest(testPlan.hasIPv6 ? 'IPv6' : 'IPv4'); }, 500));
 
@@ -214,7 +199,7 @@
     startTestButton.setAttribute('aria-disabled', true);
   }
 
-  function formatSpeed(value) {
+  function formatSpeed() {
     var value = parseFloat(Math.round(value * 100) / 100).toFixed(2);
     value = (value > 1000) ? parseFloat(value / 1000).toFixed(2) + ' Gbps' : value + ' Mbps';
     return value;
@@ -229,7 +214,6 @@
     myChart.setOption(option, true);
 
     function latencyHttpOnComplete(result) {
-
       result = result.sort(function (a, b) {
         return +a.time - +b.time;
       });
@@ -240,7 +224,6 @@
       else{
         updateValue(currentTest, result[0].time + ' ms');
       }
-
     }
 
     function latencyHttpOnProgress() {
@@ -263,12 +246,13 @@
         option.series[0].detail.show = false;
         //update gauge
         myChart.setOption(option, true);
-      }else{
+      } else {
         result = result.results.sort(function (a, b) {
           return +a.time - +b.time;
         });
         updateValue(currentTest, result[0].time + ' ms');
       }
+      
       if (version === 'IPv6') {
         latencyTest('IPv4');
         return;
@@ -292,12 +276,13 @@
         option.series[0].detail.show = false;
         //update gauge
         myChart.setOption(option, true);
-      }else{
+      } else {
         result = result.results.sort(function (a, b) {
           return +a.time - +b.time;
         });
         updateValue(currentTest, result[0].time + ' ms');
       }
+
       if (version === 'IPv6') {
         latencyTest('IPv4');
         return;
@@ -321,12 +306,13 @@
         option.series[0].detail.show = false;
         //update gauge
         myChart.setOption(option, true);
-      }else{
+      } else {
         result = result.results.sort(function (a, b) {
           return +a.time - +b.time;
         });
         updateValue(currentTest, result[0].time + ' ms');
       }
+
       if (version === 'IPv6') {
         latencyTest('IPv4');
         return;
@@ -365,11 +351,12 @@
       if(version==='IPv4'){
         uploadProbe();
       }
+
       //void (!(version === 'IPv6') && uploadTest(testPlan.hasIPv6 ? 'IPv6' : 'IPv4'));
       updateValue([currentTest, '-', version].join(''), finalValue);
     }
 
-    function calculateStatsonError(result) {
+    function calculateStatsonError() {
       //set test value to 0
       option.series[0].data[0].value = 0;
       //updat test status to complete
@@ -388,7 +375,6 @@
     }
 
     function downloadHttpOnComplete(result) {
-
       var calculateMeanStats = new window.calculateStats('http://' + testPlan.baseUrlIPv4 + '/calculator', result, calculateStatsonComplete, calculateStatsonError);
       calculateMeanStats.performCalculations();
     }
@@ -398,12 +384,13 @@
       myChart.setOption(option, true);
     }
 
-    function downloadHttpOnAbort(result) {
+    function downloadHttpOnAbort() {
       if (version === 'IPv6') {
         testPlan.hasIPv6 = false;
         downloadTest('IPv4');
         return;
       }
+
       //set test value to 0
       option.series[0].data[0].value = 0;
       //updat test status to complete
@@ -421,12 +408,13 @@
       myChart.setOption(option, true);
     }
 
-    function downloadHttpOnTimeout(result) {
+    function downloadHttpOnTimeout() {
       if (version === 'IPv6') {
         testPlan.hasIPv6 = false;
         downloadTest('IPv4');
         return;
       }
+
       //set test value to 0
       option.series[0].data[0].value = 0;
       //updat test status to complete
@@ -444,12 +432,13 @@
       myChart.setOption(option, true);
     }
 
-    function downloadHttpOnError(result) {
+    function downloadHttpOnError() {
       if (version === 'IPv6') {
         testPlan.hasIPv6 = false;
         downloadTest('IPv4');
         return;
       }
+
       //set test value to 0
       option.series[0].data[0].value = 0;
       //updat test status to complete
@@ -469,13 +458,13 @@
 
     urls.length=0;
     var baseUrl = (version === 'IPv6') ? testPlan.baseUrlIPv6NoPort : testPlan.baseUrlIPv4NoPort;
-    for (var i = 0; i < ports.length; i++) {
-      for(var b= 0; b <6; b++ )
-      {
-        urls.push('http://' + baseUrl + ':' + ports[i] + '/download?bufferSize=');
 
+    for (var i = 0; i < ports.length; i++) {
+      for(var b= 0; b <6; b++ ) {
+        urls.push('http://' + baseUrl + ':' + ports[i] + '/download?bufferSize=');
       }
     }
+
     var downloadHttpConcurrentProgress = new window.downloadHttpConcurrentProgress(urls, 'GET', downloadCurrentRuns, downloadTestTimeout, downloadTestLength, downloadMovingAverage, downloadHttpOnComplete, downloadHttpOnProgress,
       downloadHttpOnAbort, downloadHttpOnTimeout, downloadHttpOnError,downloadSize, downloadProgressInterval,monitorInterval);
 
@@ -495,20 +484,18 @@
         !firstRun && uploadTest(testPlan.hasIPv6 ? 'IPv6' : 'IPv4');
       }, 500));
     }
-      function uploadProbeTestOnError(result) {
 
-        void (!(testPlan.hasIPv6 === 'IPv6') && setTimeout(function () {
-          !firstRun && uploadTest(testPlan.hasIPv6 ? 'IPv6' : 'IPv4');
-        }, 500));
-      }
-
-      var uploadProbeTestRun = new window.uploadProbeTest('http://' + testPlan.baseUrlIPv4 + '/upload', 'http://' + testPlan.baseUrlIPv4 + '/uploadProbe', false, 3000, 194872, uploadProbeTestOnComplete, uploadProbeTestOnError);
-      uploadProbeTestRun.start();
+    function uploadProbeTestOnError() {
+      void (!(testPlan.hasIPv6 === 'IPv6') && setTimeout(function () {
+        !firstRun && uploadTest(testPlan.hasIPv6 ? 'IPv6' : 'IPv4');
+      }, 500));
     }
 
+    var uploadProbeTestRun = new window.uploadProbeTest('http://' + testPlan.baseUrlIPv4 + '/upload', 'http://' + testPlan.baseUrlIPv4 + '/uploadProbe', false, 3000, 194872, uploadProbeTestOnComplete, uploadProbeTestOnError);
+    uploadProbeTestRun.start();
+  }
 
   function uploadTest(version) {
-    console.log('uploadTest: ' + version);
     var currentTest = 'upload';
     option.series[0].data[0].value = 0;
     option.series[0].data[0].name = 'Testing Upload...';
@@ -519,6 +506,7 @@
       var finalValue = parseFloat(Math.round(result.stats.mean * 100) / 100).toFixed(2);
       finalValue = (finalValue > 1000) ? parseFloat(finalValue / 1000).toFixed(2) + ' Gbps' : finalValue + ' Mbps';
       void ((version === 'IPv6') && uploadTest('IPv4'));
+
       if (!(version === 'IPv6')) {
         //update button text to communicate current state of test as In Progress
         startTestButton.innerHTML = 'Start Test';
@@ -540,25 +528,29 @@
       updateValue([currentTest, '-', version].join(''), finalValue);
     }
 
-    function calculateStatsonError(result) {
+    function calculateStatsonError() {
       startTestButton.disabled = false;
       //update button text to communicate current state of test as In Progress
       startTestButton.innerHTML = 'Start Test';
     }
+
     function uploadHttpOnComplete(result) {
       var calculateMeanStats = new window.calculateStats('http://' + testPlan.baseUrlIPv4 + '/calculator', result, calculateStatsonComplete, calculateStatsonError);
       calculateMeanStats.performCalculations();
     }
+
     function uploadHttpOnProgress(result) {
       option.series[0].data[0].value = result;
       myChart.setOption(option, true);
     }
-    function uploadHttpOnAbort(result) {
+
+    function uploadHttpOnError() {
       if (version === 'IPv6') {
         testPlan.hasIPv6 = false;
         uploadTest('IPv4');
         return;
       }
+
       //set test value to 0
       option.series[0].data[0].value = 0;
       //updat test status to complete
@@ -575,53 +567,10 @@
       //update gauge
       myChart.setOption(option, true);
     }
-    function uploadHttpOnTimeout(result) {
-      if (version === 'IPv6') {
-        testPlan.hasIPv6 = false;
-        uploadTest('IPv4');
-        return;
-      }
-      //set test value to 0
-      option.series[0].data[0].value = 0;
-      //updat test status to complete
-      option.series[0].data[0].name = 'Test Failed';
-      //set accessiblity aria-disabled state.
-      //This will also effect the visual look by corresponding css
-      startTestButton.setAttribute('aria-disabled', false);
-      //update button text to communicate current state of test as In Progress
-      startTestButton.innerHTML = 'Start Test';
-      //enable start button
-      startTestButton.disabled = false;
-      //hide current test value in chart
-      option.series[0].detail.show = false;
-      //update gauge
-      myChart.setOption(option, true);
-    }
-    function uploadHttpOnError(result) {
-      if (version === 'IPv6') {
-        testPlan.hasIPv6 = false;
-        uploadTest('IPv4');
-        return;
-      }
-      //set test value to 0
-      option.series[0].data[0].value = 0;
-      //updat test status to complete
-      option.series[0].data[0].name = 'Test Failed';
-      //set accessiblity aria-disabled state.
-      //This will also effect the visual look by corresponding css
-      startTestButton.setAttribute('aria-disabled', false);
-      //update button text to communicate current state of test as In Progress
-      startTestButton.innerHTML = 'Start Test';
-      //enable start button
-      startTestButton.disabled = false;
-      //hide current test value in chart
-      option.series[0].detail.show = false;
-      //update gauge
-      myChart.setOption(option, true);
-    }
+
     var baseUrl = (version === 'IPv6') ? 'http://' + testPlan.baseUrlIPv6 : 'http://' + testPlan.baseUrlIPv4;
 
-    if (navigator.appVersion.indexOf("MSIE") != -1 || navigator.appVersion.indexOf("Trident") != -1 || navigator.appVersion.indexOf("Edge") != -1) {
+    if (navigator.appVersion.indexOf('MSIE') != -1 || navigator.appVersion.indexOf('Trident') != -1 || navigator.appVersion.indexOf('Edge') != -1) {
       uploadSize = microsoftUploadSize;
       uiMovingAverage = microsoftUiUploadMovingAverage;
     }
@@ -629,7 +578,6 @@
     var uploadHttpConcurrentTestSuite = new window.uploadHttpConcurrentProgress(baseUrl + '/upload', 'POST', uploadConcurrentRuns, uploadTimeout, uploadTestLength,
       uploadMovingAverage, uiMovingAverage, uploadHttpOnComplete, uploadHttpOnProgress, uploadHttpOnError, uploadSize);
     uploadHttpConcurrentTestSuite.initiateTest();
-
   }
 
   function isMobile() {
